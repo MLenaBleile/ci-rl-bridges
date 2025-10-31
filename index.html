@@ -329,6 +329,25 @@
             mask-composite: exclude;
         }
         
+        .resources-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #4a4a4a;
+            text-align: justify;
+        }
+        
+        .resources-content a {
+            color: var(--accent-orange);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .resources-content a:hover {
+            text-decoration: underline;
+            color: var(--light-orange);
+        }
+        
         footer {
             background: linear-gradient(135deg, var(--deep-purple) 0%, var(--primary-color) 100%);
             color: white;
@@ -483,8 +502,12 @@
         
         <section id="resources">
             <h2>Resources</h2>
-            <div class="coming-soon">
-                <p>Preliminary chapters and accompanying code implementations will be available shortly.</p>
+            <div class="resources-content">
+                <p>Talks:</p>
+                <ul>
+                    <li><a href="https://github.com/MLenaBleile/ci-rl-bridges/blob/master/Keynote%20Slides%20NYC%20CIRL%20Workshop%202025.pptx">Keynote Slides NYC CIRL Workshop 2025</a></li>
+                    <li><a href="https://github.com/MLenaBleile/ci-rl-bridges/blob/master/Nxt%20AI%20Slides%202025.pptx">Nxt AI Slides 2025</a></li>
+                </ul>
             </div>
         </section>
     </main>
