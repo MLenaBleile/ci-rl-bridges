@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimal Control Using Causal Agents - MaryLena Bleile</title>
+    <style>
+        :root {
+            --primary-color: #5e3a8e;
+            --deep-purple: #4a2c6e;
+            --accent-orange: #ff6b35;
+            --light-orange: #ff8c5a;
+            --text-color: #333;
+            --light-purple: #e8dff5;
+            --light-gray: #f8f6fa;
+            --border-color: #d8d0e8;
+            --max-width: 900px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #fff;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(94, 58, 142, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 107, 53, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(123, 79, 162, 0.02) 0%, transparent 50%);
+            background-attachment: fixed;
+        }
+        
+        .container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #5e3a8e 0%, #7b4fa2 50%, #8e5ba8 100%);
+            color: white;
+            padding: 3rem 0;
+            text-align: center;
+            box-shadow: 0 2px 15px rgba(94, 58, 142, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(255, 107, 53, 0.2) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -5%;
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, rgba(255, 140, 90, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            font-style: italic;
+            opacity: 0.95;
+            margin-bottom: 1.5rem;
+            font-weight: 300;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        
+        .author {
+            font-size: 1.2rem;
+            font-weight: 400;
+            color: var(--light-orange);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        
+        .tagline {
+            font-style: italic;
+            font-size: 0.95rem;
+            opacity: 0.9;
+            margin-top: 1rem;
+            background: linear-gradient(90deg, #fff, var(--light-orange), #fff);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shine 3s linear infinite;
+        }
+        
+        @keyframes shine {
+            to {
+                background-position: 200% center;
+            }
+        }
+        
+        nav {
+            background: linear-gradient(to right, #f4f0f8 0%, #fef6f3 100%);
+            border-bottom: 2px solid var(--accent-orange);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            padding: 1rem 0;
+            flex-wrap: wrap;
+        }
+        
+        nav li {
+            margin: 0 2rem;
+        }
+        
+        nav a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            position: relative;
+            padding-bottom: 2px;
+        }
+        
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--accent-orange);
+            transition: width 0.3s ease;
+        }
+        
+        nav a:hover {
+            color: var(--accent-orange);
+        }
+        
+        nav a:hover::after {
+            width: 100%;
+        }
+        
+        main {
+            padding: 3rem 0;
+        }
+        
+        section {
+            margin-bottom: 3rem;
+        }
+        
+        h2 {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            font-weight: 400;
+            border-bottom: 3px solid transparent;
+            border-image: linear-gradient(to right, var(--primary-color), var(--accent-orange), var(--primary-color));
+            border-image-slice: 1;
+            padding-bottom: 0.5rem;
+        }
+        
+        .book-description {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #4a4a4a;
+            text-align: justify;
+            margin-bottom: 2rem;
+        }
+        
+        .publication-info {
+            background: linear-gradient(135deg, #f4f0f8 0%, #fef6f3 100%);
+            padding: 1.5rem;
+            border-left: 4px solid var(--accent-orange);
+            margin: 2rem 0;
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 2px 10px rgba(94, 58, 142, 0.1);
+        }
+        
+        .publication-info p {
+            margin: 0.5rem 0;
+            font-size: 1rem;
+        }
+        
+        .toc {
+            background-color: white;
+            border: 2px solid var(--border-color);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(94, 58, 142, 0.08);
+            position: relative;
+        }
+        
+        .toc::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--primary-color), var(--accent-orange));
+            border-radius: 8px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
+        }
+        
+        .toc:hover::before {
+            opacity: 0.2;
+        }
+        
+        .toc-part {
+            margin-bottom: 2rem;
+        }
+        
+        .toc-part:last-child {
+            margin-bottom: 0;
+        }
+        
+        .part-title {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--light-purple);
+        }
+        
+        .toc-list {
+            list-style: none;
+            counter-reset: chapter;
+        }
+        
+        .toc-list li {
+            counter-increment: chapter;
+            margin: 1rem 0;
+            font-size: 1.05rem;
+            position: relative;
+            padding-left: 3rem;
+            transition: transform 0.2s ease;
+        }
+        
+        .toc-list li:hover {
+            transform: translateX(5px);
+        }
+        
+        .toc-list li::before {
+            content: counter(chapter) ".";
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+            color: var(--accent-orange);
+            width: 2rem;
+            text-align: right;
+        }
+        
+        .chapter-title {
+            color: var(--text-color);
+        }
+        
+        .intro-link {
+            color: var(--accent-orange);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-left: 0.5rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .intro-link:hover {
+            text-decoration: underline;
+            color: var(--light-orange);
+        }
+        
+        .coming-soon {
+            background: linear-gradient(135deg, #f4f0f8 0%, #fef6f3 50%, #f8f4fc 100%);
+            padding: 2rem;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            margin-top: 2rem;
+            border: 2px solid transparent;
+            background-clip: padding-box;
+            position: relative;
+        }
+        
+        .coming-soon::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 8px;
+            padding: 2px;
+            background: linear-gradient(45deg, var(--primary-color), var(--accent-orange));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+        }
+        
+        footer {
+            background: linear-gradient(135deg, var(--deep-purple) 0%, var(--primary-color) 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-top: 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(to right, var(--accent-orange), var(--light-orange), var(--accent-orange));
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .footer-left, .footer-right {
+            flex: 1;
+            min-width: 250px;
+            margin: 1rem 0;
+        }
+        
+        footer a {
+            color: var(--light-orange);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        footer a:hover {
+            text-decoration: underline;
+            color: #ffa07a;
+        }
+        
+        .contact-info {
+            font-size: 0.95rem;
+            line-height: 1.8;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            nav li {
+                margin: 0 1rem;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .toc-list li {
+                padding-left: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Optimal Control Using Causal Agents</h1>
+            <p class="subtitle">Translational Synergies in Causal Inference and Reinforcement Learning</p>
+            <p class="author">MaryLena Bleile, Ph.D.</p>
+            <p class="tagline">Building bridges, not mountains</p>
+        </div>
+    </header>
+    
+    <nav>
+        <ul>
+            <li><a href="#about">About</a></li>
+            <li><a href="#contents">Contents</a></li>
+            <li><a href="#resources">Resources</a></li>
+        </ul>
+    </nav>
+    
+    <main class="container">
+        <section id="about">
+            <h2>About This Book</h2>
+            <p class="book-description">
+                Optimal Control Using Causal Agents is a translation manual between Causal Inference and Reinforcement Learning, written for researchers and practitioners 
+                already familiar with either Causal Inference or Reinforcement Learning. 
+                Each theoretical connection is grounded in concrete applications ranging from clinical decision-making and Brazilian Jiu-Jitsu strategy to GARCH financial modeling. 
+                The book uses R and Python for implementation.
+            </p>
+            
+            <p class="book-description">
+                Optimal Control Using Causal Agents is a rosetta stone, not a comprehensive textbook (see the Causal AI book developed by Bareinboim, et. al. for that). In short, Optimal Control Using Causal Agents builds bridges between existing concepts instead of constructing concepts from the ground up. 
+                The goal is for causal inference practitioners to gain instant access to reinforcement learning's computational tools by seeing how these tools share ideas with their causal methods, and vice versa. 
+                The result is a practical guide for navigating 70 years of parallel mathematical development that has been artificially separated by academic boundaries. 
+                Perhaps the most important contribution is a comprehensive translation table which creates a map between notational conventions in both fields.
+            </p>
+            
+            <div class="publication-info">
+                <p><strong>Publisher:</strong> CRC Press</p>
+                <p><strong>Expected Publication:</strong> Spring 2026</p>
+                <p><strong>Series:</strong> Chapman & Hall/CRC Machine Learning & Pattern Recognition</p>
+                <p><strong>Editor:</strong> Lara Spieker</p>
+            </div>
+        </section>
+        
+        <section id="contents">
+            <h2>Table of Contents</h2>
+            <div class="toc">
+                <div class="toc-part">
+                    <h3 class="part-title">Part I: The Divide</h3>
+                    <ol class="toc-list" style="counter-reset: chapter 0;">
+                        <li><span class="chapter-title">Introduction</span> <a href="crl_intro.pdf" class="intro-link">[Download PDF]</a></li>
+                        <li><span class="chapter-title">Programming</span></li>
+                    </ol>
+                </div>
+                
+                <div class="toc-part">
+                    <h3 class="part-title">Part II: Foundations: Causal Inference</h3>
+                    <ol class="toc-list" style="counter-reset: chapter 2;">
+                        <li><span class="chapter-title">Causal Inference With Randomization</span></li>
+                        <li><span class="chapter-title">Causal Effects Without Randomization</span></li>
+                    </ol>
+                </div>
+                
+                <div class="toc-part">
+                    <h3 class="part-title">Part III: Foundation and Empire: Bridges From Reinforcement Learning to Causal Inference</h3>
+                    <ol class="toc-list" style="counter-reset: chapter 4;">
+                        <li><span class="chapter-title">Tabular Reinforcement Learning</span></li>
+                        <li><span class="chapter-title">Reinforcement Learning Models</span></li>
+                    </ol>
+                </div>
+                
+                <div class="toc-part">
+                    <h3 class="part-title">Part IV: Second Foundation: Synthesis</h3>
+                    <ol class="toc-list" style="counter-reset: chapter 6;">
+                        <li><span class="chapter-title">Beyond Markovian Dynamics</span></li>
+                        <li><span class="chapter-title">Beyond Ignorable Missing Data</span></li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+        
+        <section id="resources">
+            <h2>Resources</h2>
+            <div class="coming-soon">
+                <p>Preliminary chapters and accompanying code implementations will be available shortly.</p>
+            </div>
+        </section>
+    </main>
+    
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-left">
+                    <p class="contact-info">
+                        <strong>Author:</strong> <a href="https://marylenableile.com">MaryLena Bleile</a><br>
+                        <strong>Email:</strong> <a href="mailto:marylenableile@gmail.com">marylenableile@gmail.com</a>
+                    </p>
+                </div>
+                <div class="footer-right">
+                    <p class="contact-info">
+                        &copy; 2025 MaryLena Bleile. All rights reserved.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
