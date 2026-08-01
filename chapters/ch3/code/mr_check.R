@@ -1,0 +1,17 @@
+﻿suppressMessages({
+set.seed(2024); n <- 5000
+xm <- rnorm(n,0,1); xiv <- rbinom(n,1,0.3)
+LDL <- 130 + (-15)*xiv + 20*xm + rnorm(n,0,10)
+CHD <- 10 + 0.5*LDL + 15*xm + rnorm(n,0,5)
+data <- data.frame(xiv=xiv, LDL=LDL, CHD=CHD, xm=xm)
+library(ivreg)
+naive_model <- lm(CHD ~ LDL, data=data)
+iv_model <- ivreg(CHD ~ LDL | xiv, data=data)
+stage1 <- lm(LDL ~ xiv, data=data)
+data$LDL_hat <- fitted(stage1)
+stage2 <- lm(CHD ~ LDL_hat, data=data)
+})
+cat("naive LDL     :", round(coef(naive_model)["LDL"],6), "\n")
+cat("ivreg LDL     :", round(coef(iv_model)["LDL"],7), "\n")
+cat("manual LDL_hat:", round(coef(stage2)["LDL_hat"],7), "\n")
+cat("stage1 F      :\n"); print(summary(stage1)$fstatistic)

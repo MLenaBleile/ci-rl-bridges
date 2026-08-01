@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimal Control Using Causal Agents - MaryLena Bleile</title>
+    <style>
+        :root {
+            --primary-color: #5e3a8e;
+            --deep-purple: #4a2c6e;
+            --accent-orange: #ff6b35;
+            --light-orange: #ff8c5a;
+            --text-color: #333;
+            --light-purple: #e8dff5;
+            --light-gray: #f8f6fa;
+            --light-blue: #5dade2;
+            --border-color: #d8d0e8;
+            --max-width: 900px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #fff;
+            background-image:
+                radial-gradient(circle at 20% 80%, rgba(94, 58, 142, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 107, 53, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(123, 79, 162, 0.02) 0%, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        .container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #5e3a8e 0%, #7b4fa2 50%, #8e5ba8 100%);
+            color: white;
+            padding: 3rem 0;
+            text-align: center;
+            box-shadow: 0 2px 15px rgba(94, 58, 142, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(255, 107, 53, 0.2) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -5%;
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, rgba(255, 140, 90, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 1;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            font-style: italic;
+            opacity: 0.95;
+            margin-bottom: 1.5rem;
+            font-weight: 300;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .author {
+            font-size: 1.2rem;
+            font-weight: 400;
+            color: var(--light-orange);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .tagline {
+            font-style: italic;
+            font-size: 0.95rem;
+            opacity: 0.9;
+            margin-top: 1rem;
+            background: linear-gradient(90deg, #fff, var(--light-orange), #fff);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shine 3s linear infinite;
+        }
+
+        @keyframes shine {
+            to {
+                background-position: 200% center;
+            }
+        }
+
+        nav {
+            background: linear-gradient(to right, #f4f0f8 0%, #fef6f3 100%);
+            border-bottom: 2px solid var(--accent-orange);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            padding: 1rem 0;
+            flex-wrap: wrap;
+        }
+
+        nav li {
+            margin: 0 1.5rem;
+        }
+
+        nav a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            position: relative;
+            padding-bottom: 2px;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--accent-orange);
+            transition: width 0.3s ease;
+        }
+
+        nav a:hover {
+            color: var(--accent-orange);
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        nav a.external-link {
+            color: var(--accent-orange);
+            font-weight: 600;
+        }
+
+        nav a.external-link::after {
+            background-color: var(--primary-color);
+        }
+
+        main {
+            padding: 3rem 0;
+        }
+
+        section {
+            margin-bottom: 3rem;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            font-weight: 400;
+            border-bottom: 3px solid transparent;
+            border-image: linear-gradient(to right, var(--primary-color), var(--accent-orange), var(--primary-color));
+            border-image-slice: 1;
+            padding-bottom: 0.5rem;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            margin-top: 1.5rem;
+            font-weight: 500;
+        }
+
+        .book-description {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #4a4a4a;
+            text-align: justify;
+            margin-bottom: 2rem;
+        }
+
+        .publication-info {
+            background: linear-gradient(135deg, #f4f0f8 0%, #fef6f3 100%);
+            padding: 1.5rem;
+            border-left: 4px solid var(--accent-orange);
+            margin: 2rem 0;
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 2px 10px rgba(94, 58, 142, 0.1);
+        }
+
+        .publication-info p {
+            margin: 0.5rem 0;
+            font-size: 1rem;
+        }
+
+        .toc {
+            background-color: white;
+            border: 2px solid var(--border-color);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(94, 58, 142, 0.08);
+            position: relative;
+        }
+
+        .toc::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--primary-color), var(--accent-orange));
+            border-radius: 8px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
+        }
+
+        .toc:hover::before {
+            opacity: 0.2;
+        }
+
+        .toc-part {
+            margin-bottom: 2rem;
+        }
+
+        .toc-part:last-child {
+            margin-bottom: 0;
+        }
+
+        .part-title {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--light-purple);
+        }
+
+        .toc-list {
+            list-style: none;
+            counter-reset: chapter;
+        }
+
+        .toc-list li {
+            counter-increment: chapter;
+            margin: 1rem 0;
+            font-size: 1.05rem;
+            position: relative;
+            padding-left: 3rem;
+            transition: transform 0.2s ease;
+        }
+
+        .toc-list li:hover {
+            transform: translateX(5px);
+        }
+
+        .toc-list li::before {
+            content: counter(chapter) ".";
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+            color: var(--accent-orange);
+            width: 2rem;
+            text-align: right;
+        }
+
+        .chapter-title {
+            color: var(--text-color);
+        }
+
+        .intro-link {
+            color: var(--accent-orange);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-left: 0.5rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .intro-link:hover {
+            text-decoration: underline;
+            color: var(--light-orange);
+        }
+
+        .coming-soon {
+            background: linear-gradient(135deg, #f4f0f8 0%, #fef6f3 50%, #f8f4fc 100%);
+            padding: 2rem;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            margin-top: 2rem;
+            border: 2px solid transparent;
+            background-clip: padding-box;
+            position: relative;
+        }
+
+        .coming-soon::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 8px;
+            padding: 2px;
+            background: linear-gradient(45deg, var(--primary-color), var(--accent-orange));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+        }
+
+        .resources-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #4a4a4a;
+        }
+
+        .resources-content a {
+            color: var(--accent-orange);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .resources-content a:hover {
+            text-decoration: underline;
+            color: var(--light-orange);
+        }
+
+        .resources-content ul {
+            margin-left: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .resources-content li {
+            margin-bottom: 0.75rem;
+        }
+
+        .resources-content p {
+            margin-bottom: 1rem;
+        }
+
+        .resource-section {
+            background-color: white;
+            border: 2px solid var(--border-color);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 10px rgba(94, 58, 142, 0.05);
+        }
+
+        .resource-section h3 {
+            margin-top: 0;
+            border-bottom: 2px solid var(--light-purple);
+            padding-bottom: 0.5rem;
+        }
+
+        .tour-dates {
+            background-color: white;
+            border: 2px solid var(--border-color);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(94, 58, 142, 0.08);
+        }
+
+        .tour-event {
+            display: flex;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--light-purple);
+        }
+
+        .tour-event:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .tour-date-box {
+            min-width: 80px;
+            text-align: center;
+            margin-right: 1.5rem;
+            padding: 0.5rem;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--deep-purple) 100%);
+            border-radius: 6px;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .tour-month {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.9;
+        }
+
+        .tour-year {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .tour-details {
+            flex: 1;
+        }
+
+        .tour-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 0.3rem;
+        }
+
+        .tour-location {
+            font-size: 0.95rem;
+            color: #666;
+            margin-bottom: 0.3rem;
+        }
+
+        .tour-type {
+            font-size: 0.85rem;
+            color: var(--accent-orange);
+            font-style: italic;
+        }
+
+        footer {
+            background: linear-gradient(135deg, var(--deep-purple) 0%, var(--primary-color) 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-top: 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(to right, var(--accent-orange), var(--light-orange), var(--accent-orange));
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .footer-left, .footer-right {
+            flex: 1;
+            min-width: 250px;
+            margin: 1rem 0;
+        }
+
+        footer a {
+            color: var(--light-orange);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+            color: #ffa07a;
+        }
+
+        .contact-info {
+            font-size: 0.95rem;
+            line-height: 1.8;
+        }
+
+        .coffee-link:hover .coffee-qr {
+            display: block !important;
+        }
+
+        .recognition-info {
+            background: linear-gradient(135deg, #f4f0f8 0%, #fef6f3 100%);
+            padding: 1.5rem;
+            border-left: 4px solid var(--primary-color);
+            margin: 1.5rem 0 2rem 0;
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 2px 10px rgba(94, 58, 142, 0.1);
+        }
+
+        .recognition-info p {
+            margin: 0.5rem 0;
+            font-size: 1rem;
+        }
+
+        .recognition-info a {
+            color: var(--accent-orange);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .recognition-info a:hover {
+            text-decoration: underline;
+            color: var(--light-orange);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .subtitle {
+                font-size: 1rem;
+            }
+
+            nav li {
+                margin: 0.25rem 0.75rem;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .toc-list li {
+                padding-left: 2.5rem;
+            }
+
+            .tour-event {
+                flex-direction: column;
+            }
+
+            .tour-date-box {
+                margin-right: 0;
+                margin-bottom: 1rem;
+                width: fit-content;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Optimal Control Using Causal Agents</h1>
+            <p class="subtitle">Translational Synergies in Causal Inference and Reinforcement Learning</p>
+            <p class="author"><a href="https://www.marylenableile.com" style="color: var(--light-orange); text-decoration: none;">MaryLena Bleile, Ph.D.</a></p>
+            <p class="tagline">Bridge fields without apology.</p>
+             <p style="margin-top: 1rem;"><a href="https://forms.gle/PKdCg64SSrPZ1gA88" style="color: var(--light-orange); text-decoration: none; font-weight: 500;">Sign up to receive an email when a new chapter is posted</a></p>
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="#about">About</a></li>
+            <li><a href="#contents">Contents</a></li>
+            <li><a href="#tour">Tour Dates</a></li>
+            <li><a href="#resources">Resources</a></li>
+            <li><a href="https://roadmap.tao-rwd.com/" target="_blank" class="external-link">TAO Roadmap Tool ↗</a></li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        <section id="about">
+            <h2>About This Book</h2>
+            <p class="book-description">
+                Optimal Control Using Causal Agents is a translation manual between Causal Inference and Reinforcement Learning, written for researchers and practitioners
+                already familiar with either Causal Inference or Reinforcement Learning.
+                The book uses R and Python for implementation.
+            </p>
+
+            <p class="book-description">
+                Optimal Control Using Causal Agents is a rosetta stone, not a comprehensive textbook (see the Causal AI book developed by Bareinboim, et. al. for that). In short, Optimal Control Using Causal Agents builds bridges between existing concepts instead of constructing concepts from the ground up.
+                The goal is for causal inference practitioners to gain instant access to reinforcement learning's computational tools by seeing how these tools share ideas with their causal methods, and vice versa.
+                The result is a practical guide for navigating 70 years of parallel mathematical development that has been artificially separated by academic boundaries.
+                Perhaps the most important contribution is a comprehensive translation table which creates a map between notational conventions in both fields.
+            </p>
+
+            <div class="publication-info">
+                <p><strong>Publisher:</strong> CRC Press</p>
+                <p><strong>Expected Publication:</strong> Spring 2027</p>
+                <p><strong>Series:</strong> Chapman & Hall/CRC Press</p>
+                <p><strong>Editor:</strong> Lara Spieker</p>
+            </div>
+
+            <div class="recognition-info">
+                <p><strong>Recognition:</strong> The author and book were both named as finalists in <a href="https://causalpython.io/">Aleksander Molak's</a> <em>Best of Causality 2025</em> community survey, in the Person of the Year and Best New Book categories, respectively.</p>
+            </div>
+        </section>
+
+        <section id="contents">
+            <h2>Table of Contents</h2>
+            <div class="toc">
+                <div class="toc-part">
+                     <span class="chapter-title">Preface</span> <a href="https://github.com/MLenaBleile/ci-rl-bridges/blob/master/frontmatter/preface.pdf" class="preface-pdf">[pdf]</a>
+                    <h3 class="part-title">Part I: The Divide</h3>
+                    <ol class="toc-list" style="counter-reset: chapter 0;">
+                        <li><span class="chapter-title">Introduction</span> <a href="https://github.com/MLenaBleile/ci-rl-bridges/tree/master/chapters/ch1/code" class="intro-code">[Code]</a><a href="https://github.com/MLenaBleile/ci-rl-bridges/blob/master/chapters/ch1/chapter1.pdf" class="intro-pdf">[pdf]</a> </li>
+                    </ol>
+                </div>
+
+                <div class="toc-part">
+                    <h3 class="part-title">Part II: Foundations: Causal Inference</h3>
+                    <ol class="toc-list" style="counter-reset: chapter 1;">
+                        <li><span class="chapter-title">Causal Inference With Randomization</span> <a href="https://github.com/MLenaBleile/ci-rl-bridges/tree/master/chapters/ch2/code" class="ci1-code">[Code]</a><a href="https://github.com/MLenaBleile/ci-rl-bridges/blob/master/chapters/ch2/chapter2.pdf" class="ci1-pdf">[pdf]</a></li>
+                        <li><span class="chapter-title">Causal Inference Without Randomization</span> <a href="https://github.com/MLenaBleile/ci-rl-bridges/tree/master/chapters/ch3/code" class="ci2-code">[Code]</a><a href="https://github.com/MLenaBleile/ci-rl-bridges/blob/master/chapters/ch3/chapter3.pdf" class="ci2-pdf">[pdf]</a></li>
+                    </ol>
+                </div>
+
+                <div class="toc-part">
+                    <h3 class="part-title">Part III: Foundation and Empire: Bridges From Reinforcement Learning to Causal Inference</h3>
+                    <ol class="toc-list" style="counter-reset: chapter 3;">
+                        <li><span class="chapter-title">Tabular Reinforcement Learning</span> <a href="https://github.com/MLenaBleile/ci-rl-bridges/tree/master/chapters/ch4/code" class="rl1-code">[Code]</a><a href="https://github.com/MLenaBleile/ci-rl-bridges/blob/master/chapters/ch4/chapter4.pdf" class="rl1-pdf">[pdf]</a></li>
+                        <li><span class="chapter-title">Reinforcement Learning Models</span> <a href="https://github.com/MLenaBleile/ci-rl-bridges/tree/master/chapters/ch5/code" class="rl2-code">[Code]</a><a href="https://github.com/MLenaBleile/ci-rl-bridges/blob/master/chapters/ch5/chapter5.pdf" class="rl2-pdf">[pdf]</a></li>
+                    </ol>
+                </div>
+
+                <div class="toc-part">
+                    <h3 class="part-title">Part IV: Second Foundation: Synthesis</h3>
+                    <ol class="toc-list" style="counter-reset: chapter 5;">
+                        <li><span class="chapter-title">Beyond Markovian Dynamics</span><a href="https://github.com/MLenaBleile/ci-rl-bridges/tree/master/chapters/ch6/code" class="ch6-code">[Code]</a><a href="https://github.com/MLenaBleile/ci-rl-bridges/blob/master/chapters/ch6/chapter6.pdf" class="ch6-pdf">[pdf]</a></li>
+                        <li><span class="chapter-title">Beyond Ignorable Missing Data</span><a href="https://github.com/MLenaBleile/ci-rl-bridges/tree/master/chapters/ch7/code" class="ch7-code">[Code]</a><a href="https://github.com/MLenaBleile/ci-rl-bridges/blob/master/chapters/ch7/chapter7.pdf" class="ch7-pdf">[pdf]</a></li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+
+        <section id="tour">
+            <h2>Tour Dates</h2>
+            <div class="tour-dates">
+                <div class="tour-event">
+                    <div class="tour-details">
+                        <div style="margin-bottom: 0.5rem;">
+                            <img src="assets/7ADDS.gif" alt="7th Ace Drug Discovery Summit — San Diego, May 2026" style="max-width: 400px; width: 100%; border-radius: 6px; border: 1px solid var(--border-color);">
+                        </div>
+                        <div class="tour-type">Invited Talk: Translational Synergies in Causal Inference and Reinforcement Learning</div>
+                        <div style="margin-top: 0.3rem;">
+                            <a href="https://www.eventbrite.com/e/7th-ace-drug-discovery-summit-san-diego-usa-tickets-1963221150309" style="color: var(--accent-orange); text-decoration: none; font-size: 0.9rem; font-weight: 500;">[Conference Agenda]</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tour-event">
+                    <div class="tour-details">
+                        <div style="margin-bottom: 0.5rem;">
+                            <img src="assets/JSM-2026.png" alt="JSM 2026: Causality and Complex Dynamic Systems Panel" style="max-width: 400px; width: 100%; border-radius: 6px; border: 1px solid var(--border-color);">
+                        </div>
+                        <div class="tour-type">Special Topic Panel: Causality and Complex Dynamic Systems — August 3, 8:30 AM</div>
+                        <div style="margin-top: 0.2rem; font-size: 0.9rem; color: #666;">Moderated by Aleksander Molak. Panelists: MaryLena Bleile, Minha Hwang, Justin Belair, Andrew Wilson</div>
+                    </div>
+                </div>
+
+                <div class="tour-event">
+                    <div class="tour-date-box">
+                        <div class="tour-month">Sep 29-30</div>
+                        <div class="tour-year">2026</div>
+                    </div>
+                    <div class="tour-details">
+                        <div class="tour-title">BioTechX USA 2026</div>
+                        <div class="tour-location">Boston, MA</div>
+                        <div class="tour-type">Invited Talk: Not All Bias Breaks Decisions: Relative Ignorability for Real-World Evidence</div>
+                        <div style="margin-top: 0.3rem;">
+                            <a href="https://www.terrapinn.com/conference/biotechxusa/index.stm" style="color: var(--accent-orange); text-decoration: none; font-size: 0.9rem; font-weight: 500;">[Conference Website]</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tour-event">
+                    <div class="tour-date-box">
+                        <div class="tour-month">Nov 2-4</div>
+                        <div class="tour-year">2026</div>
+                    </div>
+                    <div class="tour-details">
+                        <div class="tour-title">NxtAI 2026</div>
+                        <div class="tour-location">Boston, MA</div>
+                        <div class="tour-type">Invited Talk: When Your Agent Can Stop Worrying: Reducing POMDPs via Relative Ignorability</div>
+                        <div style="margin-top: 0.3rem;">
+                            <a href="https://nxtai-conference.com/" style="color: var(--accent-orange); text-decoration: none; font-size: 0.9rem; font-weight: 500;">[Conference Website]</a>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        </section>
+
+        <section id="resources">
+            <h2>Resources</h2>
+
+            <p class="resources-content" style="margin-bottom: 1.5rem;">Below are some resources and other relevant work readers may wish to explore. This is not by any means an exhaustive list, but may serve as a starting point for those interested in the topic.</p>
+
+            <div class="resource-section">
+                <h3>For Practitioners</h3>
+                <div class="resources-content">
+                    <p>If you're looking to apply causal inference methods in practice, particularly in healthcare and real-world evidence settings, these resources are excellent starting points:</p>
+                    <ul>
+                        <li><a href="https://roadmap.tao-rwd.com/">TAO RWD Causal Roadmap Tool</a>: An interactive tool developed by Andrew Wilson, Aimee Harrison and colleagues that guides practitioners through the Causal Roadmap framework for real-world data studies, including target trial emulation and causal inference methodology selection. I have had the pleasure to contribute some ideas to this, and continue to be engaged in discussions for its development.</li>
+                        <li><a href="https://justinbelair.ca/">Justin Bélair</a> : A biostatistician and educator offering training in causal inference and biostatistics. His forthcoming book <em>Causal Inference in Statistics</em> (with exercises, practice projects, and R/Python code notebooks) takes a theory-in-practice approach that bridges the Rubin and Pearl frameworks. He also hosts a podcast on statistics and causal inference topics, and teaches a biostatistics course oriented towards industry professionals.</li>
+                        <li><a href="https://causalpython.io/">Aleksander Molak / CausalPython.io</a> : Author of the best-selling <em>Causal Inference and Discovery in Python</em> (Packt, 2023) and host of the <a href="https://causalbanditspodcast.com/">Causal Bandits Podcast</a>, which features interviews with leading researchers including Judea Pearl, Bernhard Schölkopf, and Amit Sharma. Molak also publishes a popular weekly newsletter on causality at CausalPython.io.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="resource-section">
+                <h3>For Those With More Mathematical Background</h3>
+                <div class="resources-content">
+                    <p>For readers seeking comprehensive theoretical treatments of causal AI and complex systems:</p>
+                    <ul>
+                        <li><a href="https://causalai-book.com/">Causal Artificial Intelligence</a> by Elias Bareinboim : A comprehensive textbook covering the principles, algorithms, and tools for building causally intelligent systems. It bridges probability theory, causal inference, machine learning, and decision-making under uncertainty, providing a unified roadmap for the field. Topics include causal reinforcement learning, fairness analysis, transportability, and causal generative modeling. Free draft available online.</li>
+                        <li><a href="https://link.springer.com/book/10.1007/978-3-031-84709-7">Complexity Measurements and Causation for Dynamic Complex Systems</a> by Juan Guillermo Diaz Ochoa (Springer, 2025) : Examines problems of causal determinism in systems theory and analyzes complexity measures in relation to systems' autonomy and variability for causal inference. Relevant for those interested in the philosophical foundations of causality in complex systems, particularly biological systems and teleonomy.</li>
+                    </ul>
+
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-left">
+                    <p class="contact-info">
+                        <strong>Author:</strong> <a href="https://marylenableile.com">MaryLena Bleile</a><br>
+                        <strong>Email:</strong> <a href="mailto:marylenableile@gmail.com">marylenableile@gmail.com</a>
+                    </p>
+                    <p class="contact-info" style="margin-top: 0.5rem;">
+                        <span class="coffee-link" style="position: relative; display: inline-block;">
+                            <a href="https://venmo.com/merlinbleile" style="color: var(--light-orange); text-decoration: none; font-size: 0.9rem;">&#9749; Buy the author a coffee</a>
+                        </span>
+                    </p>
+                </div>
+                <div class="footer-right">
+                    <p class="contact-info">
+                        &copy; 2026 MaryLena Bleile. All rights reserved.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
